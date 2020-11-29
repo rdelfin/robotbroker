@@ -1,0 +1,33 @@
+syntax = "proto3";
+package broker;
+
+service Broker {
+    rpc RegisterModule (RegisterModuleRequest) returns (RegisterModuleResponse);
+    rpc RegisterPublisher (RegisterPublisherRequest) returns (RegisterPublisherResponse);
+    rpc RegisterSubscriber (RegisterSubscriberRequest) returns (RegisterSubscriberResponse);
+}
+
+message RegisterModuleRequest {
+    string module_name = 1;
+}
+
+message RegisterModuleResponse {
+    bool ok = 1;
+}
+
+message RegisterPublisherRequest {
+    string channel_name = 1;
+    string msg_type = 2;
+}
+
+message RegisterPublisherResponse {
+    string proxy_ip = 1;
+    int32 port = 2;
+}
+
+message RegisterSubscriberRequest {
+    string channel_name = 1;
+    string msg_type = 2;
+}
+
+message RegisterSubscriberResponse {}
