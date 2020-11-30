@@ -1,12 +1,12 @@
 use tonic::{transport::Server, Request, Response, Status};
 
-use broker::broker_server::{Broker, BrokerServer};
-use broker::{
+use broker_proto::{
+    broker_server::{Broker, BrokerServer},
     RegisterModuleRequest, RegisterModuleResponse, RegisterPublisherRequest,
     RegisterPublisherResponse, RegisterSubscriberRequest, RegisterSubscriberResponse,
 };
 
-pub mod broker {
+pub mod broker_proto {
     tonic::include_proto!("broker");
 }
 
