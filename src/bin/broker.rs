@@ -1,17 +1,18 @@
+use broker::{
+    nodes::NodeManager,
+    protos::{
+        broker_server::{Broker, BrokerServer},
+        RegisterModuleRequest, RegisterModuleResponse, RegisterPublisherRequest,
+        RegisterPublisherResponse, RegisterSubscriberRequest, RegisterSubscriberResponse,
+    },
+};
+use std::sync::{Arc, Mutex};
 use tonic::{transport::Server, Request, Response, Status};
 
-use broker_proto::{
-    broker_server::{Broker, BrokerServer},
-    RegisterModuleRequest, RegisterModuleResponse, RegisterPublisherRequest,
-    RegisterPublisherResponse, RegisterSubscriberRequest, RegisterSubscriberResponse,
-};
-
-pub mod broker_proto {
-    tonic::include_proto!("broker");
+#[derive(Default)]
+struct MyBroker {
+    nodes: Arc<Mutex<NodeManager>>,
 }
-
-#[derive(Debug, Default)]
-pub struct MyBroker {}
 
 #[tonic::async_trait]
 impl Broker for MyBroker {
@@ -19,11 +20,12 @@ impl Broker for MyBroker {
         &self,
         request: Request<RegisterModuleRequest>,
     ) -> Result<Response<RegisterModuleResponse>, Status> {
-        println!("Got a request: {:?}", request);
+        self.nodes
+            .lock()
+            .map_err(|_| Status::internal("Failed to borrow node manager"))?
+            .register_node(request.get_ref());
 
-        let reply = RegisterModuleResponse { ok: true };
-
-        Ok(Response::new(reply))
+        Ok(Response::new(RegisterModuleResponse { ok: true }))
     }
 
     async fn register_publisher(
