@@ -6,6 +6,7 @@ use broker::{
         RegisterPublisherRequest, RegisterPublisherResponse, RegisterSubscriberRequest,
         RegisterSubscriberResponse,
     },
+    topics::TopicManager,
 };
 use std::sync::{Arc, Mutex, MutexGuard};
 use tonic::{transport::Server, Request, Response, Status};
@@ -13,6 +14,7 @@ use tonic::{transport::Server, Request, Response, Status};
 #[derive(Default)]
 struct MyBroker {
     nodes: Arc<Mutex<NodeManager>>,
+    topics: Arc<Mutex<TopicManager>>,
 }
 
 impl MyBroker {
@@ -20,6 +22,12 @@ impl MyBroker {
         self.nodes
             .lock()
             .map_err(|_| Status::internal("Failed to borrow node manager"))
+    }
+
+    fn get_topic_manager(&self) -> Result<MutexGuard<TopicManager>, Status> {
+        self.topics
+            .lock()
+            .map_err(|_| Status::internal("Failed to borrow topic manager"))
     }
 }
 
@@ -51,18 +59,23 @@ impl Broker for MyBroker {
 
     async fn register_publisher(
         &self,
-        _: Request<RegisterPublisherRequest>,
+        request: Request<RegisterPublisherRequest>,
     ) -> Result<Response<RegisterPublisherResponse>, Status> {
-        Ok(Response::new(RegisterPublisherResponse {
-            proxy_ip: "::".to_string(),
-            port: 2,
-        }))
+        let req_ref = request.get_ref();
+        self.get_topic_manager()?
+            .add_publisher(&req_ref.channel_name, &req_ref.node_name)
+            .map_err(Into::<Status>::into)?;
+        Ok(Response::new(RegisterPublisherResponse {}))
     }
 
     async fn register_subscriber(
         &self,
-        _: Request<RegisterSubscriberRequest>,
+        request: Request<RegisterSubscriberRequest>,
     ) -> Result<Response<RegisterSubscriberResponse>, Status> {
+        let req_ref = request.get_ref();
+        self.get_topic_manager()?
+            .add_subscriber(&req_ref.channel_name, &req_ref.node_name)
+            .map_err(Into::<Status>::into)?;
         Ok(Response::new(RegisterSubscriberResponse {}))
     }
 }
