@@ -23,7 +23,8 @@ impl Broker for MyBroker {
         self.nodes
             .lock()
             .map_err(|_| Status::internal("Failed to borrow node manager"))?
-            .register_node(request.get_ref());
+            .register_node(request.get_ref())
+            .map_err(|e| Into::<Status>::into(e))?;
 
         Ok(Response::new(RegisterModuleResponse { ok: true }))
     }

@@ -9,6 +9,11 @@ service Broker {
 
 message RegisterModuleRequest {
     string module_name = 1;
+    oneof host_ip {
+        fixed32 ipv4 = 2;
+        bytes ipv6 = 3;
+    }
+    uint32 port = 4;
 }
 
 message RegisterModuleResponse {
