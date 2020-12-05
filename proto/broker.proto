@@ -2,14 +2,14 @@ syntax = "proto3";
 package broker;
 
 service Broker {
-    rpc RegisterModule (RegisterModuleRequest) returns (RegisterModuleResponse);
-    rpc ListModules (ListModulesRequest) returns (ListModulesResponse);
+    rpc RegisterNode (RegisterNodeRequest) returns (RegisterNodeResponse);
+    rpc ListNodes (ListNodesRequest) returns (ListNodesResponse);
     rpc RegisterPublisher (RegisterPublisherRequest) returns (RegisterPublisherResponse);
     rpc RegisterSubscriber (RegisterSubscriberRequest) returns (RegisterSubscriberResponse);
 }
 
-message RegisterModuleRequest {
-    string module_name = 1;
+message RegisterNodeRequest {
+    string node_name = 1;
     oneof host_ip {
         fixed32 ipv4 = 2;
         bytes ipv6 = 3;
@@ -17,13 +17,13 @@ message RegisterModuleRequest {
     uint32 port = 4;
 }
 
-message RegisterModuleResponse {
+message RegisterNodeResponse {
     bool ok = 1;
 }
 
-message ListModulesRequest {}
+message ListNodesRequest {}
 
-message ListModulesResponse {
+message ListNodesResponse {
     repeated Node nodes = 1;
 }
 

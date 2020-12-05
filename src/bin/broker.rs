@@ -2,9 +2,9 @@ use broker::{
     nodes::NodeManager,
     protos::{
         broker_server::{Broker, BrokerServer},
-        ListModulesRequest, ListModulesResponse, Node, RegisterModuleRequest,
-        RegisterModuleResponse, RegisterPublisherRequest, RegisterPublisherResponse,
-        RegisterSubscriberRequest, RegisterSubscriberResponse,
+        ListNodesRequest, ListNodesResponse, Node, RegisterNodeRequest, RegisterNodeResponse,
+        RegisterPublisherRequest, RegisterPublisherResponse, RegisterSubscriberRequest,
+        RegisterSubscriberResponse,
     },
 };
 use std::sync::{Arc, Mutex, MutexGuard};
@@ -25,26 +25,26 @@ impl MyBroker {
 
 #[tonic::async_trait]
 impl Broker for MyBroker {
-    async fn register_module(
+    async fn register_node(
         &self,
-        request: Request<RegisterModuleRequest>,
-    ) -> Result<Response<RegisterModuleResponse>, Status> {
+        request: Request<RegisterNodeRequest>,
+    ) -> Result<Response<RegisterNodeResponse>, Status> {
         self.get_node_manager()?
             .register_node(request.get_ref())
             .map_err(|e| Into::<Status>::into(e))?;
 
-        Ok(Response::new(RegisterModuleResponse { ok: true }))
+        Ok(Response::new(RegisterNodeResponse { ok: true }))
     }
 
-    async fn list_modules(
+    async fn list_nodes(
         &self,
-        _: Request<ListModulesRequest>,
-    ) -> Result<Response<ListModulesResponse>, Status> {
+        _: Request<ListNodesRequest>,
+    ) -> Result<Response<ListNodesResponse>, Status> {
         let nodes = self
             .get_node_manager()?
             .list_nodes()
             .map_err(|e| Into::<Status>::into(e))?;
-        Ok(Response::new(ListModulesResponse {
+        Ok(Response::new(ListNodesResponse {
             nodes: nodes.into_iter().map(|n| Into::<Node>::into(n)).collect(),
         }))
     }

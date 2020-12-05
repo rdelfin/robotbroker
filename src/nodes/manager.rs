@@ -1,6 +1,6 @@
 use crate::{
     nodes::{LocalNodeStorage, Node, NodeAddress, NodeManagerError, NodeStorage},
-    protos::RegisterModuleRequest,
+    protos::RegisterNodeRequest,
 };
 
 pub struct NodeManager {
@@ -16,9 +16,9 @@ impl Default for NodeManager {
 }
 
 impl NodeManager {
-    pub fn register_node(&mut self, req: &RegisterModuleRequest) -> Result<(), NodeManagerError> {
+    pub fn register_node(&mut self, req: &RegisterNodeRequest) -> Result<(), NodeManagerError> {
         self.storage.add_node(&Node {
-            name: req.module_name.clone(),
+            name: req.node_name.clone(),
             address: NodeAddress::from_proto_data(
                 req.host_ip
                     .as_ref()

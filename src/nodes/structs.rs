@@ -1,6 +1,5 @@
 use crate::protos::{
-    node::HostIp as NodeHostIp, register_module_request::HostIp as RegisterHostIp,
-    Node as ProtoNode,
+    node::HostIp as NodeHostIp, register_node_request::HostIp as RegisterHostIp, Node as ProtoNode,
 };
 use std::net::{IpAddr, Ipv4Addr};
 use thiserror::Error;
