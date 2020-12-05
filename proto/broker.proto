@@ -36,3 +36,13 @@ message RegisterSubscriberRequest {
 }
 
 message RegisterSubscriberResponse {}
+
+
+message Node {
+    string name = 1;
+    oneof host_ip {
+        fixed32 ipv4 = 2;
+        bytes ipv6 = 3;
+    }
+    uint32 port = 4;
+}

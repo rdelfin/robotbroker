@@ -1,4 +1,7 @@
-use crate::protos::register_module_request::HostIp;
+use crate::protos::{
+    node::HostIp as NodeHostIp, register_module_request::HostIp as RegisterHostIp,
+    Node as ProtoNode,
+};
 use std::net::{IpAddr, Ipv4Addr};
 use thiserror::Error;
 use tonic::Status;
@@ -39,16 +42,43 @@ impl Into<Status> for NodeManagerError {
     }
 }
 
+impl Into<ProtoNode> for Node {
+    fn into(self) -> ProtoNode {
+        let mut node = ProtoNode {
+            name: self.name,
+            host_ip: None,
+            port: 0,
+        };
+
+        if let NodeAddress::Network { ip, port } = self.address {
+            node.port = port;
+            node.host_ip = Some(match ip {
+                IpAddr::V4(addr) => NodeHostIp::Ipv4(
+                    addr.octets()
+                        .iter()
+                        .fold(0 as u32, |cumm, next| (cumm << 8) + *next as u32),
+                ),
+                IpAddr::V6(addr) => NodeHostIp::Ipv6(addr.octets().iter().cloned().collect()),
+            });
+        }
+
+        node
+    }
+}
+
 impl NodeAddress {
-    pub fn from_proto_data(ip: &HostIp, port: u32) -> Result<NodeAddress, NodeManagerError> {
+    pub fn from_proto_data(
+        ip: &RegisterHostIp,
+        port: u32,
+    ) -> Result<NodeAddress, NodeManagerError> {
         let ip = match ip {
-            HostIp::Ipv4(val) => IpAddr::V4(Ipv4Addr::new(
+            RegisterHostIp::Ipv4(val) => IpAddr::V4(Ipv4Addr::new(
                 get_byte(*val, 3),
                 get_byte(*val, 2),
                 get_byte(*val, 1),
                 get_byte(*val, 0),
             )),
-            HostIp::Ipv6(bytes) => {
+            RegisterHostIp::Ipv6(bytes) => {
                 if bytes.len() != 16 {
                     return Err(NodeManagerError::InvalidIPv6Format(bytes.len()));
                 }
