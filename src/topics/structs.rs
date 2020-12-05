@@ -43,14 +43,14 @@ impl Into<Status> for TopicManagerError {
     fn into(self) -> Status {
         match &self {
             TopicManagerError::NodeAlreadyExists {
-                node,
-                topic,
-                pubsub,
+                node: _,
+                topic: _,
+                pubsub: _,
             } => Status::already_exists(format!("{}", self)),
             TopicManagerError::NodeDoesntExist {
-                node,
-                topic,
-                pubsub,
+                node: _,
+                topic: _,
+                pubsub: _,
             } => Status::not_found(format!("{}", self)),
         }
     }

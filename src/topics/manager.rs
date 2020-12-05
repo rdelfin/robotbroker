@@ -5,32 +5,34 @@ pub struct TopicManager {
     topics: HashMap<String, Topic>,
 }
 
-impl TopicManager {
-    pub fn new() -> TopicManager {
+impl Default for TopicManager {
+    fn default() -> TopicManager {
         TopicManager {
             topics: HashMap::new(),
         }
     }
+}
 
+impl TopicManager {
     pub fn add_subscriber(
         &mut self,
-        topic_name: &str,
+        channel_name: &str,
         node_name: &str,
     ) -> Result<(), TopicManagerError> {
         self.topics
-            .entry(topic_name.to_string())
-            .or_insert(Topic::new(topic_name))
+            .entry(channel_name.to_string())
+            .or_insert(Topic::new(channel_name))
             .add_subscriber(node_name)
     }
 
     pub fn add_publisher(
-        mut self,
-        topic_name: &str,
+        &mut self,
+        channel_name: &str,
         node_name: &str,
     ) -> Result<(), TopicManagerError> {
         self.topics
-            .entry(topic_name.to_string())
-            .or_insert(Topic::new(topic_name))
+            .entry(channel_name.to_string())
+            .or_insert(Topic::new(channel_name))
             .add_publisher(node_name)
     }
 }
