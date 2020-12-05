@@ -3,6 +3,7 @@ package broker;
 
 service Broker {
     rpc RegisterModule (RegisterModuleRequest) returns (RegisterModuleResponse);
+    rpc ListModules (ListModulesRequest) returns (ListModulesResponse);
     rpc RegisterPublisher (RegisterPublisherRequest) returns (RegisterPublisherResponse);
     rpc RegisterSubscriber (RegisterSubscriberRequest) returns (RegisterSubscriberResponse);
 }
@@ -18,6 +19,12 @@ message RegisterModuleRequest {
 
 message RegisterModuleResponse {
     bool ok = 1;
+}
+
+message ListModulesRequest {}
+
+message ListModulesResponse {
+    repeated Node nodes = 1;
 }
 
 message RegisterPublisherRequest {

@@ -1,6 +1,6 @@
 use crate::{
     nodes::{LocalNodeStorage, Node, NodeAddress, NodeManagerError, NodeStorage},
-    protos::{ListModulesRequest, RegisterModuleRequest},
+    protos::RegisterModuleRequest,
 };
 
 pub struct NodeManager {

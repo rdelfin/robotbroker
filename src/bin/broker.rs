@@ -2,16 +2,25 @@ use broker::{
     nodes::NodeManager,
     protos::{
         broker_server::{Broker, BrokerServer},
-        RegisterModuleRequest, RegisterModuleResponse, RegisterPublisherRequest,
-        RegisterPublisherResponse, RegisterSubscriberRequest, RegisterSubscriberResponse,
+        ListModulesRequest, ListModulesResponse, Node, RegisterModuleRequest,
+        RegisterModuleResponse, RegisterPublisherRequest, RegisterPublisherResponse,
+        RegisterSubscriberRequest, RegisterSubscriberResponse,
     },
 };
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, MutexGuard};
 use tonic::{transport::Server, Request, Response, Status};
 
 #[derive(Default)]
 struct MyBroker {
     nodes: Arc<Mutex<NodeManager>>,
+}
+
+impl MyBroker {
+    fn get_node_manager(&self) -> Result<MutexGuard<NodeManager>, Status> {
+        self.nodes
+            .lock()
+            .map_err(|_| Status::internal("Failed to borrow node manager"))
+    }
 }
 
 #[tonic::async_trait]
@@ -20,13 +29,24 @@ impl Broker for MyBroker {
         &self,
         request: Request<RegisterModuleRequest>,
     ) -> Result<Response<RegisterModuleResponse>, Status> {
-        self.nodes
-            .lock()
-            .map_err(|_| Status::internal("Failed to borrow node manager"))?
+        self.get_node_manager()?
             .register_node(request.get_ref())
             .map_err(|e| Into::<Status>::into(e))?;
 
         Ok(Response::new(RegisterModuleResponse { ok: true }))
+    }
+
+    async fn list_modules(
+        &self,
+        _: Request<ListModulesRequest>,
+    ) -> Result<Response<ListModulesResponse>, Status> {
+        let nodes = self
+            .get_node_manager()?
+            .list_nodes()
+            .map_err(|e| Into::<Status>::into(e))?;
+        Ok(Response::new(ListModulesResponse {
+            nodes: nodes.into_iter().map(|n| Into::<Node>::into(n)).collect(),
+        }))
     }
 
     async fn register_publisher(
