@@ -1,5 +1,6 @@
 use std::{collections::HashSet, fmt};
 use thiserror::Error;
+use tonic::Status;
 
 #[derive(Debug)]
 pub enum PubOrSub {
@@ -34,6 +35,23 @@ impl fmt::Display for PubOrSub {
         match self {
             PubOrSub::Publisher => write!(f, "Publisher"),
             PubOrSub::Subscriber => write!(f, "Subscriber"),
+        }
+    }
+}
+
+impl Into<Status> for TopicManagerError {
+    fn into(self) -> Status {
+        match &self {
+            TopicManagerError::NodeAlreadyExists {
+                node,
+                topic,
+                pubsub,
+            } => Status::already_exists(format!("{}", self)),
+            TopicManagerError::NodeDoesntExist {
+                node,
+                topic,
+                pubsub,
+            } => Status::not_found(format!("{}", self)),
         }
     }
 }
