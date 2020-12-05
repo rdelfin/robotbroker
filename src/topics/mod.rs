@@ -1,4 +1,7 @@
 mod manager;
 mod structs;
 
-pub use self::structs::{Topic, TopicManagerError};
+pub use self::{
+    manager::TopicManager,
+    structs::{Topic, TopicManagerError},
+};
