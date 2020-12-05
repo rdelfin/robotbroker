@@ -57,7 +57,7 @@ impl Into<ProtoNode> for Node {
                         .iter()
                         .fold(0 as u32, |cumm, next| (cumm << 8) + *next as u32),
                 ),
-                IpAddr::V6(addr) => NodeHostIp::Ipv6(addr.octets().iter().cloned().collect()),
+                IpAddr::V6(addr) => NodeHostIp::Ipv6(addr.octets().to_vec()),
             });
         }
 

@@ -22,7 +22,7 @@ impl NodeManager {
             address: NodeAddress::from_proto_data(
                 req.host_ip
                     .as_ref()
-                    .ok_or(NodeManagerError::MissingField("host_ip".to_string()))?,
+                    .ok_or_else(|| NodeManagerError::MissingField("host_ip".to_string()))?,
                 req.port,
             )?,
         })

@@ -2,7 +2,7 @@ use broker::{
     nodes::NodeManager,
     protos::{
         broker_server::{Broker, BrokerServer},
-        ListNodesRequest, ListNodesResponse, Node, RegisterNodeRequest, RegisterNodeResponse,
+        ListNodesRequest, ListNodesResponse, RegisterNodeRequest, RegisterNodeResponse,
         RegisterPublisherRequest, RegisterPublisherResponse, RegisterSubscriberRequest,
         RegisterSubscriberResponse,
     },
@@ -31,7 +31,7 @@ impl Broker for MyBroker {
     ) -> Result<Response<RegisterNodeResponse>, Status> {
         self.get_node_manager()?
             .register_node(request.get_ref())
-            .map_err(|e| Into::<Status>::into(e))?;
+            .map_err(Into::<Status>::into)?;
 
         Ok(Response::new(RegisterNodeResponse { ok: true }))
     }
@@ -43,15 +43,15 @@ impl Broker for MyBroker {
         let nodes = self
             .get_node_manager()?
             .list_nodes()
-            .map_err(|e| Into::<Status>::into(e))?;
+            .map_err(Into::<Status>::into)?;
         Ok(Response::new(ListNodesResponse {
-            nodes: nodes.into_iter().map(|n| Into::<Node>::into(n)).collect(),
+            nodes: nodes.into_iter().map(Into::into).collect(),
         }))
     }
 
     async fn register_publisher(
         &self,
-        request: Request<RegisterPublisherRequest>,
+        _: Request<RegisterPublisherRequest>,
     ) -> Result<Response<RegisterPublisherResponse>, Status> {
         Ok(Response::new(RegisterPublisherResponse {
             proxy_ip: "::".to_string(),
@@ -61,7 +61,7 @@ impl Broker for MyBroker {
 
     async fn register_subscriber(
         &self,
-        request: Request<RegisterSubscriberRequest>,
+        _: Request<RegisterSubscriberRequest>,
     ) -> Result<Response<RegisterSubscriberResponse>, Status> {
         Ok(Response::new(RegisterSubscriberResponse {}))
     }
