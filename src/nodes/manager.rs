@@ -1,6 +1,6 @@
 use crate::{
     nodes::{LocalNodeStorage, Node, NodeAddress, NodeManagerError, NodeStorage},
-    protos::RegisterModuleRequest,
+    protos::{ListModulesRequest, RegisterModuleRequest},
 };
 
 pub struct NodeManager {
@@ -26,5 +26,9 @@ impl NodeManager {
                 req.port,
             )?,
         })
+    }
+
+    pub fn list_nodes(&mut self) -> Result<Vec<Node>, NodeManagerError> {
+        self.storage.get_nodes()
     }
 }

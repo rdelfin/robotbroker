@@ -5,6 +5,7 @@ pub trait NodeStorage {
     fn add_node(&mut self, node: &Node) -> Result<(), NodeManagerError>;
     fn remove_node(&mut self, name: &str) -> Result<(), NodeManagerError>;
     fn get_address(&self, name: &str) -> Result<&NodeAddress, NodeManagerError>;
+    fn get_nodes(&self) -> Result<Vec<Node>, NodeManagerError>;
 }
 
 #[derive(Default)]
@@ -32,5 +33,9 @@ impl NodeStorage for LocalNodeStorage {
             None => Err(NodeManagerError::NodeDoesNotExist(name.to_string())),
             Some(node) => Ok(&node.address),
         }
+    }
+
+    fn get_nodes(&self) -> Result<Vec<Node>, NodeManagerError> {
+        Ok(self.data.values().cloned().collect())
     }
 }
