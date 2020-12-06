@@ -8,6 +8,8 @@ use broker::{
     },
     topics::TopicManager,
 };
+use log::info;
+use log4rs;
 use std::sync::{Arc, Mutex, MutexGuard};
 use tonic::{transport::Server, Request, Response, Status};
 
@@ -37,6 +39,7 @@ impl Broker for MyBroker {
         &self,
         request: Request<RegisterNodeRequest>,
     ) -> Result<Response<RegisterNodeResponse>, Status> {
+        info!("called RegisterNode()");
         self.get_node_manager()?
             .register_node(request.get_ref())
             .map_err(Into::<Status>::into)?;
@@ -48,6 +51,7 @@ impl Broker for MyBroker {
         &self,
         _: Request<ListNodesRequest>,
     ) -> Result<Response<ListNodesResponse>, Status> {
+        info!("called ListNodes()");
         let nodes = self
             .get_node_manager()?
             .list_nodes()
@@ -61,6 +65,7 @@ impl Broker for MyBroker {
         &self,
         request: Request<RegisterPublisherRequest>,
     ) -> Result<Response<RegisterPublisherResponse>, Status> {
+        info!("called RegisterPublisher()");
         let req_ref = request.get_ref();
         self.get_topic_manager()?
             .add_publisher(&req_ref.channel_name, &req_ref.node_name)
@@ -72,6 +77,7 @@ impl Broker for MyBroker {
         &self,
         request: Request<RegisterSubscriberRequest>,
     ) -> Result<Response<RegisterSubscriberResponse>, Status> {
+        info!("called RegisterSubscriber()");
         let req_ref = request.get_ref();
         self.get_topic_manager()?
             .add_subscriber(&req_ref.channel_name, &req_ref.node_name)
@@ -82,6 +88,8 @@ impl Broker for MyBroker {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    log4rs::init_file("config/log4rs.yaml", Default::default()).unwrap();
+
     let addr = "[::1]:50051".parse()?;
     let broker = MyBroker::default();
 
