@@ -5,8 +5,8 @@ authors = ["Ricardo Delfin <me@rdelfin.com>"]
 edition = "2018"
 
 [lib]
-name = "broker"
-path = "src/lib.rs"
+name = "broker_internal"
+path = "src/broker_internal/lib.rs"
 
 [[bin]]
 name = "broker"
