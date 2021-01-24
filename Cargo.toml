@@ -5,21 +5,22 @@ authors = ["Ricardo Delfin <me@rdelfin.com>"]
 edition = "2018"
 
 [lib]
-name = "broker_internal"
-path = "src/broker_internal/lib.rs"
-
-[[bin]]
 name = "broker"
+path = "src/lib.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 prost = "0.6"
 thiserror = "1.0"
-tokio = { version = "0.2", features = ["macros"] }
+tokio = { version = "1.0", features = ["macros"] }
 tonic = "0.3"
 log = "0.4"
 log4rs = "0.13.0"
+capnp = "0.14"
+capnp-futures = "0.14"
+capnp-rpc = "0.14"
 
 [build-dependencies]
 tonic-build = "0.3"
+capnpc = "0.14"
