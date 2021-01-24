@@ -75,42 +75,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b700ce4376041dcd0a327fd0097c41095743c4c8af8887265942faf1100bd040"
 
 [[package]]
-name = "capnp"
-version = "0.14.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ee33f13b9419d35f9ae6e0ee2e5ef6bd059a4d0da2fda16a88ddaf57dfe9acca"
-
-[[package]]
-name = "capnp-futures"
-version = "0.14.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5348014992f0f4972dc9a82b303f2c3aa49521dcdc1a8008e008a3619c46eef8"
-dependencies = [
- "capnp",
- "futures",
-]
-
-[[package]]
-name = "capnp-rpc"
-version = "0.14.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "71fa93ee762cb4004904815a283b4dbea2cca07a9e29325f242e1dda7c5bfa90"
-dependencies = [
- "capnp",
- "capnp-futures",
- "futures",
-]
-
-[[package]]
-name = "capnpc"
-version = "0.14.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "76c50eb1605fb64e5cbf9a22c244ea4136516f1aa38ee8e2c8f94a080370521e"
-dependencies = [
- "capnp",
-]
-
-[[package]]
 name = "cfg-if"
 version = "0.1.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -895,17 +859,12 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
- "capnp",
- "capnp-futures",
- "capnp-rpc",
- "capnpc",
  "futures",
  "log",
  "log4rs",
  "prost",
  "thiserror",
  "tokio",
- "tokio-util",
  "tonic",
  "tonic-build",
 ]
@@ -1110,7 +1069,6 @@ dependencies = [
  "async-stream",
  "bytes 1.0.1",
  "futures-core",
- "futures-io",
  "futures-sink",
  "log",
  "pin-project-lite",
