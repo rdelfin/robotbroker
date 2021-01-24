@@ -35,8 +35,12 @@ impl Broker for BrokerImpl {
         request: Request<RegisterNodeRequest>,
     ) -> Result<Response<RegisterNodeResponse>, Status> {
         self.get_node_manager()
-            .register_node(&request.into_inner())
+            .register_node(&request.get_ref())
             .map_err(Into::<Status>::into)?;
+        info!(
+            "Registered a new node named {}",
+            request.get_ref().node_name
+        );
         Ok(Response::new(RegisterNodeResponse { ok: true }))
     }
 
