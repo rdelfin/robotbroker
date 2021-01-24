@@ -5,5 +5,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .file("capnp/node.capnp")
         .run()?;
     tonic_build::compile_protos("proto/broker.proto")?;
+    tonic_build::compile_protos("proto/node.proto")?;
     Ok(())
 }

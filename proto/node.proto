@@ -1,0 +1,6 @@
+syntax = "proto3";
+package broker;
+
+service Node {
+    rpc Heartbeat() returns (bool);
+}

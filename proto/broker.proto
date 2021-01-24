@@ -4,17 +4,11 @@ package broker;
 service Broker {
     rpc RegisterNode (RegisterNodeRequest) returns (RegisterNodeResponse);
     rpc ListNodes (ListNodesRequest) returns (ListNodesResponse);
-    rpc RegisterPublisher (RegisterPublisherRequest) returns (RegisterPublisherResponse);
-    rpc RegisterSubscriber (RegisterSubscriberRequest) returns (RegisterSubscriberResponse);
+    rpc DeleteNode (DeleteNodeRequest) returns (DeleteNodeResponse);
 }
 
 message RegisterNodeRequest {
     string node_name = 1;
-    oneof host_ip {
-        fixed32 ipv4 = 2;
-        bytes ipv6 = 3;
-    }
-    uint32 port = 4;
 }
 
 message RegisterNodeResponse {
@@ -27,21 +21,11 @@ message ListNodesResponse {
     repeated Node nodes = 1;
 }
 
-message RegisterPublisherRequest {
+message DeleteNodeRequest {
     string node_name = 1;
-    string channel_name = 2;
-    string msg_type = 3;
 }
 
-message RegisterPublisherResponse {}
-
-message RegisterSubscriberRequest {
-    string node_name = 1;
-    string channel_name = 2;
-    string msg_type = 3;
-}
-
-message RegisterSubscriberResponse {}
+message DeleteNodeResponse {}
 
 
 message Node {
