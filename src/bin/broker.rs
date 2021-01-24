@@ -68,7 +68,7 @@ async fn main() -> anyhow::Result<()> {
     tokio::task::LocalSet::new()
         .run_until(async move {
             let listener = TcpListener::bind(&addr).await?;
-            let hello_world_client: core::Client = capnp_rpc::new_client(BrokerImpl::default());
+            let core_client: core::Client = capnp_rpc::new_client(BrokerImpl::default());
 
             loop {
                 let (stream, _) = listener.accept().await?;
@@ -83,7 +83,7 @@ async fn main() -> anyhow::Result<()> {
                 );
 
                 let rpc_system =
-                    RpcSystem::new(Box::new(network), Some(hello_world_client.clone().client));
+                    RpcSystem::new(Box::new(network), Some(core_client.clone().client));
 
                 tokio::task::spawn_local(Box::pin(rpc_system.map(|_| ())));
             }
