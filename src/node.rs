@@ -1,5 +1,4 @@
 use crate::protos::broker::{broker_client::BrokerClient, RegisterNodeRequest};
-use anyhow::anyhow;
 use anyhow::Result;
 use async_trait::async_trait;
 use tokio::runtime::Builder;
@@ -46,8 +45,9 @@ struct NodeHandle {
 
 impl NodeHandle {
     async fn new() -> Result<NodeHandle> {
-        let mut client = BrokerClient::connect("http://[::1]:50051").await?;
-        Ok(NodeHandle { client })
+        Ok(NodeHandle {
+            client: BrokerClient::connect("http://[::1]:50051").await?,
+        })
     }
 
     async fn register_node(&mut self, name: &str) -> Result<()> {

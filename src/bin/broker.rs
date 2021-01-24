@@ -46,7 +46,7 @@ impl Broker for BrokerImpl {
 
     async fn list_nodes(
         &self,
-        request: Request<ListNodesRequest>,
+        _: Request<ListNodesRequest>,
     ) -> Result<Response<ListNodesResponse>, Status> {
         let nodes = self
             .get_node_manager()
