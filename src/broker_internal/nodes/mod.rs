@@ -5,5 +5,5 @@ mod structs;
 pub use self::{
     manager::NodeManager,
     storage::{LocalNodeStorage, NodeStorage},
-    structs::{Node, NodeAddress, NodeManagerError},
+    structs::{Node, NodeManagerError},
 };

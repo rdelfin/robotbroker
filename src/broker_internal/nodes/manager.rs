@@ -1,5 +1,5 @@
-use crate::broker_internal::{
-    nodes::{LocalNodeStorage, Node, NodeAddress, NodeManagerError, NodeStorage},
+use crate::{
+    broker_internal::nodes::{LocalNodeStorage, Node, NodeManagerError, NodeStorage},
     protos::RegisterNodeRequest,
 };
 
@@ -19,12 +19,6 @@ impl NodeManager {
     pub fn register_node(&mut self, req: &RegisterNodeRequest) -> Result<(), NodeManagerError> {
         self.storage.add_node(&Node {
             name: req.node_name.clone(),
-            address: NodeAddress::from_proto_data(
-                req.host_ip
-                    .as_ref()
-                    .ok_or_else(|| NodeManagerError::MissingField("host_ip".to_string()))?,
-                req.port,
-            )?,
         })
     }
 
