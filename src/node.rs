@@ -23,7 +23,10 @@ pub trait ProgramNode {
 /// Here is where you pass in the node to execute in main. In theory, this should be
 /// the only thing that gets run in main. The call will be blocking.
 pub fn start<N: ProgramNode + std::marker::Send + 'static>(mut node: N) -> Result<()> {
-    let rt = Builder::new_multi_thread().enable_all().build()?;
+    let rt = Builder::new_multi_thread()
+        .thread_name("robot-node-worker")
+        .enable_all()
+        .build()?;
 
     let jh = rt.spawn(async move { node.run().await });
     futures::executor::block_on(jh)?
