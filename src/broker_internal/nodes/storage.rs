@@ -1,4 +1,4 @@
-use crate::nodes::{Node, NodeAddress, NodeManagerError};
+use crate::broker_internal::nodes::{Node, NodeAddress, NodeManagerError};
 use std::collections::HashMap;
 
 pub trait NodeStorage {

@@ -1,4 +1,4 @@
-use crate::protos::{
+use crate::broker_internal::protos::{
     node::HostIp as NodeHostIp, register_node_request::HostIp as RegisterHostIp, Node as ProtoNode,
 };
 use std::net::{IpAddr, Ipv4Addr};

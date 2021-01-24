@@ -1,4 +1,4 @@
-use crate::{
+use crate::broker_internal::{
     nodes::{LocalNodeStorage, Node, NodeAddress, NodeManagerError, NodeStorage},
     protos::RegisterNodeRequest,
 };

@@ -1,4 +1,4 @@
-use broker_internal::{
+use broker::broker_internal::{
     nodes::NodeManager,
     protos::{
         broker_server::{Broker, BrokerServer},

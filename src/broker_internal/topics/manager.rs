@@ -1,4 +1,4 @@
-use crate::topics::{Topic, TopicManagerError};
+use crate::broker_internal::topics::{Topic, TopicManagerError};
 use std::collections::HashMap;
 
 pub struct TopicManager {
