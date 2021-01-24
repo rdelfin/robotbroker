@@ -8,7 +8,7 @@ struct DeleteNodeRequest {
     name @0 :Text;
 }
 
-interface Node {
+interface Core {
     createNode @0 (req :CreateNodeRequest) -> ();
     deleteNode @1 (req: DeleteNodeRequest) -> ();
 }
