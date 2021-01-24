@@ -1,18 +1,16 @@
 use anyhow::anyhow;
 use broker::{
     broker_internal::{nodes::NodeManager, topics::TopicManager},
-    core_capnp::core,
+    protos::broker::{
+        broker_server::{Broker, BrokerServer},
+        DeleteNodeRequest, DeleteNodeResponse, ListNodesRequest, ListNodesResponse,
+        RegisterNodeRequest, RegisterNodeResponse,
+    },
 };
-use capnp::capability::Promise;
-use capnp_rpc::{pry, rpc_twoparty_capnp, twoparty, RpcSystem};
-use futures::{AsyncReadExt, FutureExt};
 use log::info;
 use log4rs;
-use std::{
-    net::ToSocketAddrs,
-    sync::{Arc, Mutex, MutexGuard},
-};
-use tokio::net::TcpListener;
+use std::sync::{Arc, Mutex, MutexGuard};
+use tonic::{transport::Server, Request, Response, Status};
 
 #[derive(Default)]
 struct BrokerImpl {
@@ -30,29 +28,40 @@ impl BrokerImpl {
     }
 }
 
-impl core::Server for BrokerImpl {
-    fn create_node(
-        &mut self,
-        params: core::CreateNodeParams,
-        mut _results: core::CreateNodeResults,
-    ) -> Promise<(), capnp::Error> {
-        info!(
-            "Recieved request to create node {}",
-            pry!(pry!(pry!(params.get()).get_req()).get_name())
-        );
-        Promise::ok(())
+#[tonic::async_trait]
+impl Broker for BrokerImpl {
+    async fn register_node(
+        &self,
+        request: Request<RegisterNodeRequest>,
+    ) -> Result<Response<RegisterNodeResponse>, Status> {
+        self.get_node_manager()
+            .register_node(&request.into_inner())
+            .map_err(Into::<Status>::into)?;
+        Ok(Response::new(RegisterNodeResponse { ok: true }))
     }
 
-    fn delete_node(
-        &mut self,
-        params: core::DeleteNodeParams,
-        mut _results: core::DeleteNodeResults,
-    ) -> Promise<(), capnp::Error> {
+    async fn list_nodes(
+        &self,
+        request: Request<ListNodesRequest>,
+    ) -> Result<Response<ListNodesResponse>, Status> {
+        let nodes = self
+            .get_node_manager()
+            .list_nodes()
+            .map_err(Into::<Status>::into)?;
+        Ok(Response::new(ListNodesResponse {
+            nodes: nodes.into_iter().map(Into::into).collect(),
+        }))
+    }
+
+    async fn delete_node(
+        &self,
+        request: Request<DeleteNodeRequest>,
+    ) -> Result<Response<DeleteNodeResponse>, Status> {
         info!(
             "Recieved request to delete node {}",
-            pry!(pry!(pry!(params.get()).get_req()).get_name())
+            request.get_ref().node_name
         );
-        Promise::ok(())
+        Ok(Response::new(DeleteNodeResponse {}))
     }
 }
 
@@ -60,33 +69,13 @@ impl core::Server for BrokerImpl {
 async fn main() -> anyhow::Result<()> {
     log4rs::init_file("config/log4rs.yaml", Default::default()).unwrap();
 
-    let addr = "[::1]:50051"
-        .to_socket_addrs()?
-        .next()
-        .ok_or(anyhow!("Could not parse address"))?;
+    let addr = "[::1]:50051".parse().unwrap();
+    let broker = BrokerImpl::default();
 
-    tokio::task::LocalSet::new()
-        .run_until(async move {
-            let listener = TcpListener::bind(&addr).await?;
-            let core_client: core::Client = capnp_rpc::new_client(BrokerImpl::default());
+    Server::builder()
+        .add_service(BrokerServer::new(broker))
+        .serve(addr)
+        .await?;
 
-            loop {
-                let (stream, _) = listener.accept().await?;
-                stream.set_nodelay(true)?;
-                let (reader, writer) =
-                    tokio_util::compat::TokioAsyncReadCompatExt::compat(stream).split();
-                let network = twoparty::VatNetwork::new(
-                    reader,
-                    writer,
-                    rpc_twoparty_capnp::Side::Server,
-                    Default::default(),
-                );
-
-                let rpc_system =
-                    RpcSystem::new(Box::new(network), Some(core_client.clone().client));
-
-                tokio::task::spawn_local(Box::pin(rpc_system.map(|_| ())));
-            }
-        })
-        .await
+    Ok(())
 }
