@@ -7,7 +7,7 @@ struct SimpleNode;
 
 #[async_trait]
 impl ProgramNode for SimpleNode {
-    fn name() -> &'static str {
+    fn name(&self) -> &'static str {
         "simple_node"
     }
 
