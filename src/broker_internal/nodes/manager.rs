@@ -1,6 +1,6 @@
 use crate::{
     broker_internal::nodes::{LocalNodeStorage, Node, NodeManagerError, NodeStorage},
-    protos::RegisterNodeRequest,
+    protos::broker::RegisterNodeRequest,
 };
 
 pub struct NodeManager {

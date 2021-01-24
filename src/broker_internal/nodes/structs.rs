@@ -1,4 +1,4 @@
-use crate::protos::Node as ProtoNode;
+use crate::protos::broker::Node as ProtoNode;
 use thiserror::Error;
 use tonic::Status;
 
@@ -33,6 +33,6 @@ impl Into<Status> for NodeManagerError {
 
 impl Into<ProtoNode> for Node {
     fn into(self) -> ProtoNode {
-        ProtoNode { name: self.name };
+        ProtoNode { name: self.name }
     }
 }
