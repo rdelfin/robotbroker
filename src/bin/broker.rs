@@ -1,102 +1,92 @@
-use broker::broker_internal::{
-    nodes::NodeManager,
-    protos::{
-        broker_server::{Broker, BrokerServer},
-        ListNodesRequest, ListNodesResponse, RegisterNodeRequest, RegisterNodeResponse,
-        RegisterPublisherRequest, RegisterPublisherResponse, RegisterSubscriberRequest,
-        RegisterSubscriberResponse,
-    },
-    topics::TopicManager,
+use anyhow::anyhow;
+use broker::{
+    broker_internal::{nodes::NodeManager, topics::TopicManager},
+    core_capnp::core,
 };
+use capnp::capability::Promise;
+use capnp_rpc::{pry, rpc_twoparty_capnp, twoparty, RpcSystem};
+use futures::{AsyncReadExt, FutureExt};
 use log::info;
 use log4rs;
-use std::sync::{Arc, Mutex, MutexGuard};
-use tonic::{transport::Server, Request, Response, Status};
+use std::{
+    net::ToSocketAddrs,
+    sync::{Arc, Mutex, MutexGuard},
+};
+use tokio::net::TcpListener;
 
 #[derive(Default)]
-struct MyBroker {
+struct BrokerImpl {
     nodes: Arc<Mutex<NodeManager>>,
     topics: Arc<Mutex<TopicManager>>,
 }
 
-impl MyBroker {
-    fn get_node_manager(&self) -> Result<MutexGuard<NodeManager>, Status> {
-        self.nodes
-            .lock()
-            .map_err(|_| Status::internal("Failed to borrow node manager"))
+impl BrokerImpl {
+    fn get_node_manager(&self) -> MutexGuard<NodeManager> {
+        self.nodes.lock().unwrap()
     }
 
-    fn get_topic_manager(&self) -> Result<MutexGuard<TopicManager>, Status> {
-        self.topics
-            .lock()
-            .map_err(|_| Status::internal("Failed to borrow topic manager"))
+    fn get_topic_manager(&self) -> MutexGuard<TopicManager> {
+        self.topics.lock().unwrap()
     }
 }
 
-#[tonic::async_trait]
-impl Broker for MyBroker {
-    async fn register_node(
-        &self,
-        request: Request<RegisterNodeRequest>,
-    ) -> Result<Response<RegisterNodeResponse>, Status> {
-        info!("called RegisterNode()");
-        self.get_node_manager()?
-            .register_node(request.get_ref())
-            .map_err(Into::<Status>::into)?;
-
-        Ok(Response::new(RegisterNodeResponse { ok: true }))
+impl core::Server for BrokerImpl {
+    fn create_node(
+        &mut self,
+        params: core::CreateNodeParams,
+        mut _results: core::CreateNodeResults,
+    ) -> Promise<(), capnp::Error> {
+        info!(
+            "Recieved request to create node {}",
+            pry!(pry!(pry!(params.get()).get_req()).get_name())
+        );
+        Promise::ok(())
     }
 
-    async fn list_nodes(
-        &self,
-        _: Request<ListNodesRequest>,
-    ) -> Result<Response<ListNodesResponse>, Status> {
-        info!("called ListNodes()");
-        let nodes = self
-            .get_node_manager()?
-            .list_nodes()
-            .map_err(Into::<Status>::into)?;
-        Ok(Response::new(ListNodesResponse {
-            nodes: nodes.into_iter().map(Into::into).collect(),
-        }))
-    }
-
-    async fn register_publisher(
-        &self,
-        request: Request<RegisterPublisherRequest>,
-    ) -> Result<Response<RegisterPublisherResponse>, Status> {
-        info!("called RegisterPublisher()");
-        let req_ref = request.get_ref();
-        self.get_topic_manager()?
-            .add_publisher(&req_ref.channel_name, &req_ref.node_name)
-            .map_err(Into::<Status>::into)?;
-        Ok(Response::new(RegisterPublisherResponse {}))
-    }
-
-    async fn register_subscriber(
-        &self,
-        request: Request<RegisterSubscriberRequest>,
-    ) -> Result<Response<RegisterSubscriberResponse>, Status> {
-        info!("called RegisterSubscriber()");
-        let req_ref = request.get_ref();
-        self.get_topic_manager()?
-            .add_subscriber(&req_ref.channel_name, &req_ref.node_name)
-            .map_err(Into::<Status>::into)?;
-        Ok(Response::new(RegisterSubscriberResponse {}))
+    fn delete_node(
+        &mut self,
+        params: core::DeleteNodeParams,
+        mut _results: core::DeleteNodeResults,
+    ) -> Promise<(), capnp::Error> {
+        info!(
+            "Recieved request to delete node {}",
+            pry!(pry!(pry!(params.get()).get_req()).get_name())
+        );
+        Promise::ok(())
     }
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() -> anyhow::Result<()> {
     log4rs::init_file("config/log4rs.yaml", Default::default()).unwrap();
 
-    let addr = "[::1]:50051".parse()?;
-    let broker = MyBroker::default();
+    let addr = "[::1]:50051"
+        .to_socket_addrs()?
+        .next()
+        .ok_or(anyhow!("Could not parse address"))?;
 
-    Server::builder()
-        .add_service(BrokerServer::new(broker))
-        .serve(addr)
-        .await?;
+    tokio::task::LocalSet::new()
+        .run_until(async move {
+            let listener = TcpListener::bind(&addr).await?;
+            let hello_world_client: core::Client = capnp_rpc::new_client(BrokerImpl::default());
 
-    Ok(())
+            loop {
+                let (stream, _) = listener.accept().await?;
+                stream.set_nodelay(true)?;
+                let (reader, writer) =
+                    tokio_util::compat::TokioAsyncReadCompatExt::compat(stream).split();
+                let network = twoparty::VatNetwork::new(
+                    reader,
+                    writer,
+                    rpc_twoparty_capnp::Side::Server,
+                    Default::default(),
+                );
+
+                let rpc_system =
+                    RpcSystem::new(Box::new(network), Some(hello_world_client.clone().client));
+
+                tokio::task::spawn_local(Box::pin(rpc_system.map(|_| ())));
+            }
+        })
+        .await
 }
