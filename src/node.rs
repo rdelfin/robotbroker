@@ -1,14 +1,9 @@
-use crate::core_capnp::core;
+use crate::protos::broker::{broker_client::BrokerClient, RegisterNodeRequest};
 use anyhow::anyhow;
 use anyhow::Result;
 use async_trait::async_trait;
-use capnp_rpc::{rpc_twoparty_capnp, twoparty, RpcSystem};
-use futures::{AsyncReadExt, FutureExt};
-use std::{
-    net::ToSocketAddrs,
-    sync::{Arc, Mutex},
-};
 use tokio::runtime::Builder;
+use tonic::{transport::Channel, Request};
 
 /// Classes implementing this trait will define your node. From here, your node will
 /// surface all the information needed to get registered, setup, and run.
@@ -37,7 +32,7 @@ pub fn start<N: ProgramNode + std::marker::Send + Sync + 'static>(mut node: N) -
         .build()?;
 
     let jh = rt.spawn(async move {
-        let nh = NodeHandle::new().await?;
+        let mut nh = NodeHandle::new().await?;
         nh.register_node(node.name()).await?;
         node.run().await
     });
@@ -46,42 +41,25 @@ pub fn start<N: ProgramNode + std::marker::Send + Sync + 'static>(mut node: N) -
 
 // Internal struct for managing a connection to the broker.
 struct NodeHandle {
-    rpc_system: Arc<Mutex<RpcSystem<rpc_twoparty_capnp::Side>>>,
+    client: BrokerClient<Channel>,
 }
 
 impl NodeHandle {
     async fn new() -> Result<NodeHandle> {
-        let addr = "[::1]:50051"
-            .to_socket_addrs()?
-            .next()
-            .ok_or(anyhow!("Could not parse address"))?;
-        let stream = tokio::net::TcpStream::connect(&addr).await?;
-        stream.set_nodelay(true)?;
-        let (reader, writer) = tokio_util::compat::TokioAsyncReadCompatExt::compat(stream).split();
-        let rpc_network = Box::new(twoparty::VatNetwork::new(
-            reader,
-            writer,
-            rpc_twoparty_capnp::Side::Client,
-            Default::default(),
-        ));
-        let rpc_system = Arc::new(Mutex::new(RpcSystem::new(rpc_network, None)));
-
-        tokio::task::spawn_local(rpc_system.lock().unwrap().map(|_| ()));
-
-        Ok(NodeHandle { rpc_system })
+        let mut client = BrokerClient::connect("http://[::1]:50051").await?;
+        Ok(NodeHandle { client })
     }
 
-    async fn register_node(&self, name: &str) -> Result<()> {
-        let core_client: core::Client = self
-            .rpc_system
-            .lock()?
-            .bootstrap(rpc_twoparty_capnp::Side::Server);
-        let mut request = core_client.create_node_request();
-        request.get().init_req().set_name(&name);
-
-        let reply = request.send().promise.await?;
-
-        println!("Registered node with name {} successfully!", name);
+    async fn register_node(&mut self, name: &str) -> Result<()> {
+        let request = Request::new(RegisterNodeRequest {
+            node_name: name.to_string(),
+        });
+        let response = self.client.register_node(request).await?;
+        println!(
+            "Registered node with name {} successfully! Ok: {}",
+            name,
+            response.get_ref().ok
+        );
         Ok(())
     }
 }
