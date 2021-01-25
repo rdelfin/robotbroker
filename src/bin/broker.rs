@@ -34,14 +34,18 @@ impl Broker for BrokerImpl {
         &self,
         request: Request<RegisterNodeRequest>,
     ) -> Result<Response<RegisterNodeResponse>, Status> {
-        self.get_node_manager()
+        let node = self
+            .get_node_manager()
             .register_node(&request.get_ref())
             .map_err(Into::<Status>::into)?;
         info!(
-            "Registered a new node named {}",
-            request.get_ref().node_name
+            "Registered a new node named {} using UDS {}",
+            request.get_ref().node_name,
+            node.uds
         );
-        Ok(Response::new(RegisterNodeResponse { ok: true }))
+        Ok(Response::new(RegisterNodeResponse {
+            uds_address: node.uds.to_string(),
+        }))
     }
 
     async fn list_nodes(

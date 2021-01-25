@@ -12,7 +12,7 @@ message RegisterNodeRequest {
 }
 
 message RegisterNodeResponse {
-    bool ok = 1;
+    string uds_address = 1;
 }
 
 message ListNodesRequest {}

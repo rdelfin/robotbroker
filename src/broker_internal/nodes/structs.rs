@@ -15,6 +15,7 @@ pub enum NodeManagerError {
 #[derive(Debug, Clone)]
 pub struct Node {
     pub name: String,
+    pub uds: String,
 }
 
 impl Into<Status> for NodeManagerError {

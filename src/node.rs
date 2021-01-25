@@ -56,9 +56,9 @@ impl NodeHandle {
         });
         let response = self.client.register_node(request).await?;
         println!(
-            "Registered node with name {} successfully! Ok: {}",
+            "Registered node with name {} successfully! UDS: {}",
             name,
-            response.get_ref().ok
+            response.get_ref().uds_address
         );
         Ok(())
     }
