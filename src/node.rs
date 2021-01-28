@@ -14,7 +14,7 @@ pub trait ProgramNode {
 
     /// The "main" for your application. This is where most of your code should be
     /// added.
-    async fn run(&mut self) -> Result<()>;
+    async fn run(&mut self, nh: &mut NodeHandle) -> Result<()>;
 
     /// Returns true if the node is still fine. This call should generally not block
     /// for any extended period of time. If this function doesn't respond within a
@@ -31,23 +31,24 @@ pub fn start<N: ProgramNode + std::marker::Send + Sync + 'static>(mut node: N) -
         .build()?;
 
     let jh = rt.spawn(async move {
-        let mut nh = NodeHandle::new().await?;
-        nh.register_node(node.name()).await?;
-        node.run().await
+        let mut nh = NodeHandle::new(node.name()).await?;
+        node.run(&mut nh).await
     });
     futures::executor::block_on(jh)?
 }
 
 // Internal struct for managing a connection to the broker.
-struct NodeHandle {
+pub struct NodeHandle {
     client: BrokerClient<Channel>,
 }
 
 impl NodeHandle {
-    async fn new() -> Result<NodeHandle> {
-        Ok(NodeHandle {
+    async fn new(name: &str) -> Result<NodeHandle> {
+        let mut handle = NodeHandle {
             client: BrokerClient::connect("http://[::1]:50051").await?,
-        })
+        };
+        handle.register_node(name).await?;
+        Ok(handle)
     }
 
     async fn register_node(&mut self, name: &str) -> Result<()> {
