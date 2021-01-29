@@ -1,8 +1,12 @@
-use crate::protos::broker::{broker_client::BrokerClient, RegisterNodeRequest};
+mod node_handle;
+mod node_server;
+
 use anyhow::Result;
 use async_trait::async_trait;
+use std::sync::Arc;
 use tokio::runtime::Builder;
-use tonic::{transport::Channel, Request};
+
+pub use self::node_handle::NodeHandle;
 
 /// Classes implementing this trait will define your node. From here, your node will
 /// surface all the information needed to get registered, setup, and run.
@@ -14,7 +18,7 @@ pub trait ProgramNode {
 
     /// The "main" for your application. This is where most of your code should be
     /// added.
-    async fn run(&mut self, nh: &mut NodeHandle) -> Result<()>;
+    async fn run(&mut self, nh: Arc<NodeHandle>) -> Result<()>;
 
     /// Returns true if the node is still fine. This call should generally not block
     /// for any extended period of time. If this function doesn't respond within a
@@ -31,36 +35,9 @@ pub fn start<N: ProgramNode + std::marker::Send + Sync + 'static>(mut node: N) -
         .build()?;
 
     let jh = rt.spawn(async move {
-        let mut nh = NodeHandle::new(node.name()).await?;
-        node.run(&mut nh).await
+        let nh = Arc::new(NodeHandle::new(node.name()).await?);
+        self::node_server::start_server(nh.clone(), nh.uds_address()).await?;
+        node.run(nh).await
     });
     futures::executor::block_on(jh)?
-}
-
-// Internal struct for managing a connection to the broker.
-pub struct NodeHandle {
-    client: BrokerClient<Channel>,
-}
-
-impl NodeHandle {
-    async fn new(name: &str) -> Result<NodeHandle> {
-        let mut handle = NodeHandle {
-            client: BrokerClient::connect("http://[::1]:50051").await?,
-        };
-        handle.register_node(name).await?;
-        Ok(handle)
-    }
-
-    async fn register_node(&mut self, name: &str) -> Result<()> {
-        let request = Request::new(RegisterNodeRequest {
-            node_name: name.to_string(),
-        });
-        let response = self.client.register_node(request).await?;
-        println!(
-            "Registered node with name {} successfully! UDS: {}",
-            name,
-            response.get_ref().uds_address
-        );
-        Ok(())
-    }
 }

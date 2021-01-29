@@ -15,6 +15,7 @@ name = "broker"
 
 [dependencies]
 anyhow = "1.0"
+async-stream = "0.3"
 async-trait = "0.1"
 futures = { version = "0.3", features = ["async-await"] }
 log = "0.4"

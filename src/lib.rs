@@ -10,4 +10,4 @@ pub mod protos {
     }
 }
 
-pub use self::node::{start, ProgramNode};
+pub use self::node::{start, NodeHandle, ProgramNode};

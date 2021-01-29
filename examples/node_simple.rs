@@ -1,6 +1,7 @@
 use anyhow::Result;
 use async_trait::async_trait;
-use broker::{start, ProgramNode};
+use broker::{start, NodeHandle, ProgramNode};
+use std::sync::Arc;
 use tokio::time::{sleep, Duration};
 
 struct SimpleNode;
@@ -11,7 +12,7 @@ impl ProgramNode for SimpleNode {
         "simple_node"
     }
 
-    async fn run(&mut self) -> Result<()> {
+    async fn run(&mut self, _nh: Arc<NodeHandle>) -> Result<()> {
         println!("Hello, World!");
         println!("Sleeping 10 seconds...");
         sleep(Duration::from_secs(10)).await;
