@@ -14,10 +14,11 @@ impl ProgramNode for SimpleNode {
 
     async fn run(&mut self, _nh: Arc<NodeHandle>) -> Result<()> {
         println!("Hello, World!");
-        println!("Sleeping 10 seconds...");
-        sleep(Duration::from_secs(10)).await;
-        println!("Done");
-        Ok(())
+        println!("Looping...");
+
+        loop {
+            sleep(Duration::from_millis(25)).await;
+        }
     }
 
     async fn ok(&self) -> Result<()> {
