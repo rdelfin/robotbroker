@@ -3,8 +3,8 @@ mod node_server;
 
 use anyhow::Result;
 use async_trait::async_trait;
-use std::sync::Arc;
-use tokio::runtime::Builder;
+use std::{sync::Arc, time::Duration};
+use tokio::{runtime::Builder, task, time};
 
 pub use self::node_handle::NodeHandle;
 
@@ -37,7 +37,19 @@ pub fn start<N: ProgramNode + std::marker::Send + Sync + 'static>(mut node: N) -
     let jh = rt.spawn(async move {
         let nh = Arc::new(NodeHandle::new(node.name()).await?);
         self::node_server::start_server(nh.clone(), nh.uds_address()).await?;
+        let nh_copy = nh.clone();
+        task::spawn(async move {
+            run_heartbeat(nh_copy).await;
+        });
         node.run(nh).await
     });
     futures::executor::block_on(jh)?
+}
+
+async fn run_heartbeat(nh: Arc<NodeHandle>) {
+    let mut interval = time::interval(Duration::from_millis(20));
+    loop {
+        nh.heartbeat().await.unwrap();
+        interval.tick().await;
+    }
 }
