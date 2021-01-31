@@ -3,7 +3,7 @@ use crate::{
     protos::broker::RegisterNodeRequest,
 };
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
-use std::path::PathBuf;
+use std::{path::PathBuf, time::Instant};
 use tempdir::TempDir;
 
 pub struct NodeManager {
@@ -25,6 +25,7 @@ impl NodeManager {
         let node = Node {
             name: req.node_name.clone(),
             uds: self.generate_uds(),
+            last_hb: Instant::now(),
         };
         self.storage.add_node(&node)?;
         Ok(node)
@@ -32,6 +33,10 @@ impl NodeManager {
 
     pub fn list_nodes(&mut self) -> Result<Vec<Node>, NodeManagerError> {
         self.storage.get_nodes()
+    }
+
+    pub fn update_heartbeat(&mut self, name: &str) -> Result<(), NodeManagerError> {
+        self.storage.update_heartbeat(name, Instant::now())
     }
 
     fn generate_uds(&self) -> String {

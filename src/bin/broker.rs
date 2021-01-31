@@ -3,8 +3,8 @@ use broker::{
     broker_internal::{nodes::NodeManager, topics::TopicManager},
     protos::broker::{
         broker_server::{Broker, BrokerServer},
-        DeleteNodeRequest, DeleteNodeResponse, ListNodesRequest, ListNodesResponse,
-        RegisterNodeRequest, RegisterNodeResponse,
+        DeleteNodeRequest, DeleteNodeResponse, HeartbeatRequest, HeartbeatResponse,
+        ListNodesRequest, ListNodesResponse, RegisterNodeRequest, RegisterNodeResponse,
     },
 };
 use log::info;
@@ -70,6 +70,16 @@ impl Broker for BrokerImpl {
             request.get_ref().node_name
         );
         Ok(Response::new(DeleteNodeResponse {}))
+    }
+
+    async fn heartbeat(
+        &self,
+        request: Request<HeartbeatRequest>,
+    ) -> Result<Response<HeartbeatResponse>, Status> {
+        self.get_node_manager()
+            .update_heartbeat(&request.get_ref().node_name)
+            .map_err(Into::<Status>::into)?;
+        Ok(Response::new(HeartbeatResponse {}))
     }
 }
 

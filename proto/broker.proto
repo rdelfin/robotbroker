@@ -5,6 +5,7 @@ service Broker {
     rpc RegisterNode (RegisterNodeRequest) returns (RegisterNodeResponse);
     rpc ListNodes (ListNodesRequest) returns (ListNodesResponse);
     rpc DeleteNode (DeleteNodeRequest) returns (DeleteNodeResponse);
+    rpc Heartbeat (HeartbeatRequest) returns (HeartbeatResponse);
 }
 
 message RegisterNodeRequest {
@@ -26,6 +27,12 @@ message DeleteNodeRequest {
 }
 
 message DeleteNodeResponse {}
+
+message HeartbeatRequest {
+    string node_name = 1;
+}
+
+message HeartbeatResponse {}
 
 
 message Node {

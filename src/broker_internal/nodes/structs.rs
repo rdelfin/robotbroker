@@ -1,4 +1,5 @@
 use crate::protos::broker::Node as ProtoNode;
+use std::time::Instant;
 use thiserror::Error;
 use tonic::Status;
 
@@ -16,6 +17,7 @@ pub enum NodeManagerError {
 pub struct Node {
     pub name: String,
     pub uds: String,
+    pub last_hb: Instant,
 }
 
 impl Into<Status> for NodeManagerError {

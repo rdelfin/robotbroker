@@ -1,10 +1,11 @@
 use crate::broker_internal::nodes::{Node, NodeManagerError};
-use std::collections::HashMap;
+use std::{collections::HashMap, time::Instant};
 
 pub trait NodeStorage {
     fn add_node(&mut self, node: &Node) -> Result<(), NodeManagerError>;
     fn remove_node(&mut self, name: &str) -> Result<(), NodeManagerError>;
     fn get_nodes(&self) -> Result<Vec<Node>, NodeManagerError>;
+    fn update_heartbeat(&mut self, name: &str, ts: Instant) -> Result<(), NodeManagerError>;
 }
 
 #[derive(Default)]
@@ -29,5 +30,14 @@ impl NodeStorage for LocalNodeStorage {
 
     fn get_nodes(&self) -> Result<Vec<Node>, NodeManagerError> {
         Ok(self.data.values().cloned().collect())
+    }
+
+    fn update_heartbeat(&mut self, name: &str, ts: Instant) -> Result<(), NodeManagerError> {
+        let node = self
+            .data
+            .get_mut(name)
+            .ok_or(NodeManagerError::NodeDoesNotExist(name.to_string()))?;
+        node.last_hb = ts;
+        Ok(())
     }
 }
