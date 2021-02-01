@@ -1,6 +1,5 @@
-use anyhow::anyhow;
 use broker::{
-    broker_internal::{nodes::NodeManager, topics::TopicManager},
+    broker_internal::nodes::NodeManager,
     protos::broker::{
         broker_server::{Broker, BrokerServer},
         DeleteNodeRequest, DeleteNodeResponse, HeartbeatRequest, HeartbeatResponse,
@@ -8,23 +7,17 @@ use broker::{
     },
 };
 use log::info;
-use log4rs;
 use std::sync::{Arc, Mutex, MutexGuard};
 use tonic::{transport::Server, Request, Response, Status};
 
 #[derive(Default)]
 struct BrokerImpl {
     nodes: Arc<Mutex<NodeManager>>,
-    topics: Arc<Mutex<TopicManager>>,
 }
 
 impl BrokerImpl {
     fn get_node_manager(&self) -> MutexGuard<NodeManager> {
         self.nodes.lock().unwrap()
-    }
-
-    fn get_topic_manager(&self) -> MutexGuard<TopicManager> {
-        self.topics.lock().unwrap()
     }
 }
 
@@ -44,7 +37,7 @@ impl Broker for BrokerImpl {
             node.uds
         );
         Ok(Response::new(RegisterNodeResponse {
-            uds_address: node.uds.to_string(),
+            uds_address: node.uds,
         }))
     }
 

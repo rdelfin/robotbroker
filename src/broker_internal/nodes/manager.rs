@@ -3,7 +3,7 @@ use crate::{
     protos::broker::RegisterNodeRequest,
 };
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
-use std::{path::PathBuf, time::Instant};
+use std::time::Instant;
 use tempdir::TempDir;
 
 pub struct NodeManager {

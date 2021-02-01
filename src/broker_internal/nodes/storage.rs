@@ -36,7 +36,7 @@ impl NodeStorage for LocalNodeStorage {
         let node = self
             .data
             .get_mut(name)
-            .ok_or(NodeManagerError::NodeDoesNotExist(name.to_string()))?;
+            .ok_or_else(|| NodeManagerError::NodeDoesNotExist(name.to_string()))?;
         node.last_hb = ts;
         Ok(())
     }
