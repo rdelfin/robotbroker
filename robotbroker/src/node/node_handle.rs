@@ -1,5 +1,5 @@
-use crate::protos::broker::{broker_client::BrokerClient, HeartbeatRequest, RegisterNodeRequest};
 use anyhow::Result;
+use broker_protos::broker::{broker_client::BrokerClient, HeartbeatRequest, RegisterNodeRequest};
 use tokio::sync::Mutex;
 use tonic::{transport::Channel, Request};
 

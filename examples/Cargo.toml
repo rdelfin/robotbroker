@@ -1,0 +1,24 @@
+[package]
+name = "broker_examples"
+version = "0.1.0"
+authors = ["Ricardo Delfin <me@rdelfin.com>"]
+edition = "2018"
+
+[[bin]]
+name = "node_read"
+path = "src/node_read.rs"
+
+[[bin]]
+name = "node_simple"
+path = "src/node_simple.rs"
+
+[dependencies]
+anyhow = "1.0"
+async-trait = "0.1"
+broker_protos = { version = "0.1.0", path = "../broker-protos" }
+robotbroker = { version = "0.1.0", path = "../robotbroker" }
+structopt = "0.3"
+tempdir = "0.3"
+tokio = { version = "1.0", features = ["macros", "rt", "rt-multi-thread", "time", "net"] }
+tonic = "0.4"
+tower = "0.4"

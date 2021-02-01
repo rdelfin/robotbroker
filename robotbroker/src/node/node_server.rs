@@ -1,9 +1,7 @@
-use crate::{
-    node::NodeHandle,
-    protos::node::{
-        node_server::{Node, NodeServer},
-        HeartbeatRequest, HeartbeatResponse,
-    },
+use crate::node::NodeHandle;
+use broker_protos::node::{
+    node_server::{Node, NodeServer},
+    HeartbeatRequest, HeartbeatResponse,
 };
 use futures::TryFutureExt;
 use std::sync::Arc;

@@ -1,12 +1,12 @@
-use broker::{
-    broker_internal::nodes::NodeManager,
-    protos::broker::{
-        broker_server::{Broker, BrokerServer},
-        DeleteNodeRequest, DeleteNodeResponse, HeartbeatRequest, HeartbeatResponse,
-        ListNodesRequest, ListNodesResponse, RegisterNodeRequest, RegisterNodeResponse,
-    },
+mod nodes;
+
+use broker_protos::broker::{
+    broker_server::{Broker, BrokerServer},
+    DeleteNodeRequest, DeleteNodeResponse, HeartbeatRequest, HeartbeatResponse, ListNodesRequest,
+    ListNodesResponse, RegisterNodeRequest, RegisterNodeResponse,
 };
 use log::info;
+use nodes::NodeManager;
 use std::sync::{Arc, Mutex, MutexGuard};
 use tonic::{transport::Server, Request, Response, Status};
 

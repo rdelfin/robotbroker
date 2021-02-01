@@ -1,4 +1,4 @@
-use broker::protos::node::{node_client::NodeClient, HeartbeatRequest};
+use broker_protos::node::{node_client::NodeClient, HeartbeatRequest};
 use std::convert::TryFrom;
 use structopt::StructOpt;
 use tokio::net::UnixStream;

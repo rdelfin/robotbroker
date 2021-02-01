@@ -1,4 +1,4 @@
-use crate::protos::broker::Node as ProtoNode;
+use broker_protos::broker::Node as ProtoNode;
 use std::time::Instant;
 use thiserror::Error;
 use tonic::Status;
@@ -7,10 +7,6 @@ use tonic::Status;
 pub enum NodeManagerError {
     #[error("Node by the name `{0}` does not exist")]
     NodeDoesNotExist(String),
-    #[error("Invalid IPv6 data format, {0} bytes provided, 16 expected")]
-    InvalidIPv6Format(usize),
-    #[error("Field `{0}` was expected but not provided.")]
-    MissingField(String),
 }
 
 #[derive(Debug, Clone)]
@@ -23,10 +19,6 @@ pub struct Node {
 impl Into<Status> for NodeManagerError {
     fn into(self) -> Status {
         match self {
-            NodeManagerError::MissingField(_) => Status::invalid_argument(format!("{:?}", self)),
-            NodeManagerError::InvalidIPv6Format(_) => {
-                Status::invalid_argument(format!("{:?}", self))
-            }
             NodeManagerError::NodeDoesNotExist(_) => {
                 Status::failed_precondition(format!("{:?}", self))
             }

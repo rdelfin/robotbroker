@@ -1,7 +1,5 @@
-use crate::{
-    broker_internal::nodes::{LocalNodeStorage, Node, NodeManagerError, NodeStorage},
-    protos::broker::RegisterNodeRequest,
-};
+use crate::nodes::{LocalNodeStorage, Node, NodeManagerError, NodeStorage};
+use broker_protos::broker::RegisterNodeRequest;
 use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use std::time::Instant;
 use tempdir::TempDir;
