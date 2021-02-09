@@ -1,21 +1,34 @@
 mod nodes;
+mod uds;
 
+use crate::{nodes::NodeManager, uds::UdsGenerator};
 use broker_protos::broker::{
     broker_server::{Broker, BrokerServer},
     DeleteNodeRequest, DeleteNodeResponse, HeartbeatRequest, HeartbeatResponse, ListNodesRequest,
     ListNodesResponse, RegisterNodeRequest, RegisterNodeResponse,
 };
 use log::info;
-use nodes::NodeManager;
-use std::sync::{Arc, Mutex, MutexGuard};
+use std::{
+    io,
+    sync::{Arc, Mutex, MutexGuard},
+};
 use tonic::{transport::Server, Request, Response, Status};
 
-#[derive(Default)]
 struct BrokerImpl {
     nodes: Arc<Mutex<NodeManager>>,
+    #[allow(dead_code)]
+    uds_generator: Arc<UdsGenerator>,
 }
 
 impl BrokerImpl {
+    fn new() -> io::Result<BrokerImpl> {
+        let uds_generator = Arc::new(UdsGenerator::new()?);
+        Ok(BrokerImpl {
+            uds_generator: uds_generator.clone(),
+            nodes: Arc::new(Mutex::new(NodeManager::new(uds_generator.clone()))),
+        })
+    }
+
     fn get_node_manager(&self) -> MutexGuard<NodeManager> {
         self.nodes.lock().unwrap()
     }
@@ -81,7 +94,7 @@ async fn main() -> anyhow::Result<()> {
     log4rs::init_file("config/log4rs.yaml", Default::default()).unwrap();
 
     let addr = "[::1]:50051".parse().unwrap();
-    let broker = BrokerImpl::default();
+    let broker = BrokerImpl::new()?;
 
     Server::builder()
         .add_service(BrokerServer::new(broker))
