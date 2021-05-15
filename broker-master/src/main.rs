@@ -5,7 +5,8 @@ use crate::{nodes::NodeManager, uds::UdsGenerator};
 use broker_protos::broker::{
     broker_server::{Broker, BrokerServer},
     DeleteNodeRequest, DeleteNodeResponse, HeartbeatRequest, HeartbeatResponse, ListNodesRequest,
-    ListNodesResponse, RegisterNodeRequest, RegisterNodeResponse,
+    ListNodesResponse, RegisterNodeRequest, RegisterNodeResponse, RegisterPublisherRequest,
+    RegisterPublisherResponse, RegisterSubscriberRequest, RegisterSubscriberResponse,
 };
 use log::info;
 use std::{
@@ -86,6 +87,24 @@ impl Broker for BrokerImpl {
             .update_heartbeat(&request.get_ref().node_name)
             .map_err(Into::<Status>::into)?;
         Ok(Response::new(HeartbeatResponse {}))
+    }
+
+    async fn register_subscriber(
+        &self,
+        _request: Request<RegisterSubscriberRequest>,
+    ) -> Result<Response<RegisterSubscriberResponse>, Status> {
+        Err(Status::unimplemented(
+            "Register subscriber has not been implemented",
+        ))
+    }
+
+    async fn register_publisher(
+        &self,
+        _request: Request<RegisterPublisherRequest>,
+    ) -> Result<Response<RegisterPublisherResponse>, Status> {
+        Err(Status::unimplemented(
+            "Register publisher has not been implemented",
+        ))
     }
 }
 
