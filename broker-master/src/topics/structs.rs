@@ -20,6 +20,29 @@ pub enum TopicManagerError {
         requested_type: String,
         real_type: String,
     },
+    #[error("Topic `{0}` does not exist")]
+    TopicDoesNotExist(String),
+    #[error("Node `{publisher}` is not publishing on topic `{topic_name}`")]
+    NotPublishing {
+        publisher: String,
+        topic_name: String,
+    },
+    #[error(
+        "Channel from `{publisher}` to `{subscriber}` over topic `{topic_name}` already exists."
+    )]
+    ChannelAlreadyExists {
+        publisher: String,
+        subscriber: String,
+        topic_name: String,
+    },
+    #[error(
+        "Channel from `{publisher}` to `{subscriber}` over topic `{topic_name}` does not exist."
+    )]
+    ChannelDoesNotExist {
+        publisher: String,
+        subscriber: String,
+        topic_name: String,
+    },
 }
 
 #[derive(Debug, Clone)]
