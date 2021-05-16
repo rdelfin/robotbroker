@@ -1,4 +1,5 @@
 mod nodes;
+mod topics;
 mod uds;
 
 use crate::{nodes::NodeManager, uds::UdsGenerator};
