@@ -17,6 +17,6 @@ rand = "0.8.2"
 robotbroker = { version = "0.1.0", path = "../robotbroker" }
 tempdir = "0.3"
 thiserror = "1.0"
-tokio = { version = "1.0", features = ["macros", "rt", "rt-multi-thread", "time", "net"] }
+tokio = { version = "1.18", features = ["macros", "rt", "rt-multi-thread", "time", "net"] }
 tonic = "0.4"
 tower = "0.4"
